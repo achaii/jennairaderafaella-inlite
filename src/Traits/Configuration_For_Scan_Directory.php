@@ -71,7 +71,7 @@ trait Configuration_For_Scan_Directory
         foreach (['DirectoriesI', 'DirectoriesII'] as $dirName) {
             foreach ($directoriesModule[$dirName] as $dir) {
                 $pluginKey = ($dirName === 'DirectoriesI') ? 'PluginI' : 'PluginII';
-                $namespacePath = ($dirName === 'DirectoriesI') ? 'Resources/Views/modules/' : 'Resources/Views/modules/Api/';
+                $namespacePath = ($dirName === 'DirectoriesI') ? 'Resources/Views/Modules/' : 'Resources/Views/Modules/Api/';
                 $pluginJson = self::get_module_plugin_json($dir, $pluginKey);
 
                 if ($pluginJson !== null) {
