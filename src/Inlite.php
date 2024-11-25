@@ -37,7 +37,7 @@ class Inlite
      */
     public function initialization()
     {
-        $inlitePath = resource_path("views/Modules");
+        $inlitePath = resource_path("views/modules");
 
         // Path to the Modules directory
         if (File::exists($inlitePath)) {
@@ -61,8 +61,8 @@ class Inlite
     {
         // Base paths to search for PHP files inside Modules directory
         $basePaths = [
-            resource_path("views/Modules"),
-            resource_path("views/Modules/Api"),
+            resource_path("views/modules"),
+            resource_path("views/modules/Api"),
         ];
 
         // Loop through each base path
