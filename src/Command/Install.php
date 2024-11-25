@@ -78,8 +78,8 @@ class Install extends Command
             $layoutsPath = resource_path('views/layouts');
             if (!File::exists($layoutsPath)) {
                 File::copyDirectory(
-                    base_path('vendor/jennairafaella/inlite/src/dist/resources/views/layouts'),
-                    base_path('resources/views/layouts')
+                    base_path('vendor/jennairaderafaella/inlite/src/dist/resources/views/layouts'),
+                    resource_path('views/layouts')
                 );
             }
 
