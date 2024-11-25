@@ -2,11 +2,8 @@
 
 namespace Jennairaderafaella\Inlite\Traits;
 
-use Livewire\Livewire;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
-
 
 trait Configuration_For_Route
 {
@@ -75,9 +72,10 @@ trait Configuration_For_Route
      */
     private static function get_route_init_controller(): void
     {
-        $default = self::directories_initialize_module()['default']['I'] ?? [];
+        $default = self::directories_initialize_module()['custome'] ?? [];
+
         foreach ($default as $item) {
-            if ($item && $item['modules'] && $item['modules-type'] == 'controller') {
+            if ($item && $item['modules'] && $item['modules-type'] == 'controller' && $item['modules-init'] === 'inlite') {
                 self::get_route_for_controller($item);
             }
         }
@@ -95,7 +93,7 @@ trait Configuration_For_Route
     {
         $default = self::directories_initialize_module()['default']['II'] ?? [];
         foreach ($default as $item) {
-            if ($item && $item['modules'] && $item['modules-type'] == 'controller') {
+            if ($item && $item['modules'] && $item['modules-type'] == 'controller' && $item['modules-init'] === 'inlite/api') {
                 self::get_route_for_controller($item);
             }
         }
@@ -112,15 +110,10 @@ trait Configuration_For_Route
      */
     private static function get_route_for_controller(array $init = []): void
     {
-        $default = $init['controller'];
-        foreach ($default as $item) {
-            if ($item['enable'] === true) {
-                Route::generate($item['name'], ucwords($init['modules-name']), [
-                    'name' => $init['modules-name'] . '.' . $init['modules-name'],
-                    'middleware' => $init['modules-middleware'],
-                ]);
-            }
-        }
+        Route::generate($init['modules-name'], ucwords($init['modules-name']), [
+            'name' => $init['modules-name'] . '.' . $init['modules-name'],
+            'middleware' => $init['modules-middleware'],
+        ]);
     }
 
     /**
