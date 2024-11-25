@@ -76,10 +76,28 @@ trait Configuration_For_Scan_Directory
 
                 if ($pluginJson !== null) {
                     ($dirName === 'DirectoriesI' ? $getDefaultDirI[] = $pluginJson : $getDefaultDirII[] = $pluginJson);
-                    $getCombineDir[] = $pluginJson + ['modules-namespace' => $namespacePath . $dir];
+                    $getCombineDir[] = $pluginJson + ['modules-namespace' => $namespacePath . $dir] + ['modules-init' => ($dirName === 'DirectoriesI') ? 'inlite' : 'inlite/api'];
                 }
             }
         }
+
+        // New logic: duplicate array based on 'controller' names
+        $duplicatedModules = [];
+        foreach ($getCombineDir as $module) {
+            if (isset($module['controller']) && is_array($module['controller'])) {
+                foreach ($module['controller'] as $controller) {
+                    if (isset($controller['name'])) {
+                        $duplicatedModule = $module;
+                        $duplicatedModule['modules-name'] = $controller['name'];
+                        $duplicatedModules[] = $duplicatedModule;
+                    }
+                }
+            } else {
+                $duplicatedModules[] = $module; // Add module as is if no 'controller' or single entry
+            }
+        }
+
+        $getCombineDir = $duplicatedModules;
 
         // Remove null elements
         $getDefaultDirI = array_filter($getDefaultDirI);
@@ -276,7 +294,7 @@ trait Configuration_For_Scan_Directory
     {
         return self::get_module_json()['module-hidden'] ? self::get_module_json()['module-hidden'] : [];
     }
-    
+
     /**
      * Retrieve the "name-package-yaml" property from the module JSON configuration.
      * 
@@ -287,5 +305,4 @@ trait Configuration_For_Scan_Directory
         // Access and return the "name-package-yaml" field from the module JSON configuration
         return self::get_module_json()['name-package-yaml'];
     }
-
 }

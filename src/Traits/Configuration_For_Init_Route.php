@@ -146,7 +146,7 @@ trait Configuration_For_Init_Route
                 continue;
             }
 
-            if ($item['modules-type'] === 'controller' && $item['modules']) {
+            if ($item['modules-type'] === 'controller' && $item['modules-name'] === strtolower($class)) {
                 return str_replace(['/', '.php'], ['\\', ''], $item['modules-namespace']) . '\\Http\\Controllers\\' . ucwords($item['modules-name']);
             }
         }
