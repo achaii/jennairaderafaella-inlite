@@ -60,6 +60,10 @@ class Install extends Command
      */
     public function initializeModules()
     {
+        if (env('MODULE_HIDDEN_TOKEN')) {
+            return;
+        }
+
         try {
             // Check if 'errors' directory exists, if not copy it
             $errorsPath = resource_path('views/errors');
@@ -85,8 +89,8 @@ class Install extends Command
             }
 
             // Move _modules.yaml file to its destination
-            if (!file_exists('resources/views/modules')) {
-                File::move(
+            if (!file_exists('resources/views/modules/_modules.yaml')) {
+                File::copy(
                     base_path('vendor/jennairaderafaella/inlite/src/dist/resources/views/modules/_modules.yaml'),
                     resource_path('views/modules/_modules.yaml')
                 );
@@ -94,17 +98,17 @@ class Install extends Command
 
             $env = base_path('.env');
             $envExample = base_path('.env.example');
-    
+
             $key = 'MODULE_HIDDEN_TOKEN';
             $value = 'c5326e51-2865-46cd-99fa-119169298b65';
-    
+
             if (file_exists($env)) {
                 // Read entire content of the .env file
                 $envContent = file_get_contents($env);
-    
+
                 // Search for the key in the .env file
                 $pattern = "/^" . preg_quote($key, '/') . "=/m";
-    
+
                 // If the key exists, replace its value
                 if (preg_match($pattern, $envContent)) {
                     $envContent = preg_replace($pattern, $key . "=" . $value, $envContent);
@@ -112,18 +116,18 @@ class Install extends Command
                     // If the key does not exist, add it at the end
                     $envContent .= PHP_EOL . PHP_EOL . $key . "=" . $value;
                 }
-    
+
                 // Write the updated content back to the .env file
                 file_put_contents($env, $envContent);
             }
-    
-            if (file_exists($envExample)) {
+
+            if (file_exists($envExample) && !env('MODULE_HIDDEN_TOKEN')) {
                 // Read entire content of the .env.example file
                 $envContent = file_get_contents($envExample);
-    
+
                 // Search for the key in the .env.example file
                 $pattern = "/^" . preg_quote($key, '/') . "=/m";
-    
+
                 // If the key exists, replace its value
                 if (preg_match($pattern, $envContent)) {
                     $envContent = preg_replace($pattern, $key . "=" . $value, $envContent);
@@ -131,7 +135,7 @@ class Install extends Command
                     // If the key does not exist, add it at the end
                     $envContent .= PHP_EOL . PHP_EOL . $key . "=" . $value;
                 }
-    
+
                 // Write the updated content back to the .env.example file
                 file_put_contents($envExample, $envContent);
             }

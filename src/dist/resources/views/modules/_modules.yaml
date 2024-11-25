@@ -1,0 +1,7 @@
+hide-package: 
+  - Api
+
+module-hidden: 
+  - Configuration"
+
+name-package-yaml: "plugin.yaml"
