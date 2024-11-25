@@ -25,8 +25,11 @@ class Inlite
      */
     public function __construct(protected Container $app)
     {
-        // Initialize the router from the application container
+        // Get the router instance from the application container
         $this->router = $app->get('router');
+
+        // Perform initial configuration using the router instance
+        self::configuration($this->router);
     }
 
     /**
