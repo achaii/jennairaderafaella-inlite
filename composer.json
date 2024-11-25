@@ -1,0 +1,31 @@
+{
+    "name": "jennairaderafaella/inlite",
+    "description": "this modules i'm made for Jennaira De Rafaella",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "aChaii",
+            "email": "hop2style@gmail.com"
+        }
+    ],
+    "autoload": {
+        "psr-4": {
+            "Jennairaderafaella\\Inlite\\": "src/"
+        }
+    },
+    "extra": {
+        "Laravel": {
+            "providers": [
+                "Jennairaderafaella\\Inlite\\InliteServiceProvider"
+            ],
+            "aliases": {
+                "Inlite": "Jennairaderafaella\\Inlite"
+            }
+        }
+    },
+    "config": { 
+        "sort-packages": true
+    },
+    "minimum-stability": "dev",
+    "prefer-stable": true
+}

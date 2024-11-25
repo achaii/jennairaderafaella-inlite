@@ -1,0 +1,15 @@
+modules: true 
+
+modules-name: "namemodule" 
+
+modules-name-route: "" 
+
+modules-middleware:  
+  - guest
+
+modules-map: "menu-1"
+
+modules-type: "controller"
+controller:
+  - enable: true
+    name: "namemodule"
