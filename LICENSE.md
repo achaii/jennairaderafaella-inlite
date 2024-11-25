@@ -2,7 +2,7 @@
 
 Copyright (c) 2014 Pingpong Labs
 
-Copyright (c) 2016 Nicolas Widart bvba <n.widart@gmail.com>
+Copyright (c) 2024 achaii <hop2style@gmail.com>
 
 > Permission is hereby granted, free of charge, to any person obtaining a copy
 > of this software and associated documentation files (the "Software"), to deal
