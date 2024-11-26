@@ -110,9 +110,10 @@ trait Configuration_For_Route
      */
     private static function get_route_for_controller(array $init = []): void
     {
-        Route::generate($init['modules-name'], ucwords($init['modules-name']), [
+        Route::generate($init['modules-name-route'] && $init['modules-enable'] === true ? $init['modules-name-route'] : $init['modules-name'], ucwords($init['modules-name']), [
             'name' => $init['modules-name'] . '.' . $init['modules-name'],
             'middleware' => $init['modules-middleware'],
+            'patterns' => ['id' => '\d+', 'value' => '\w+'],
         ]);
     }
 

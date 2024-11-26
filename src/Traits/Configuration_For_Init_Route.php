@@ -146,7 +146,7 @@ trait Configuration_For_Init_Route
                 continue;
             }
 
-            if ($item['modules-type'] === 'controller' && $item['modules-name'] === strtolower($class)) {
+            if ($item['modules-type'] === 'controller' && $item['modules-name'] === strtolower($class) && $item['modules-enable'] === true) {
                 return str_replace(['/', '.php'], ['\\', ''], $item['modules-namespace']) . '\\Http\\Controllers\\' . ucwords($item['modules-name']);
             }
         }
@@ -171,9 +171,7 @@ trait Configuration_For_Init_Route
         foreach (array_merge($this->default_method, $this->xdefault_method) as $method) {
             $method = strtolower($method);
             if (stripos($method_name, $method, 0) === 0) {
-                if (in_array($method, ['volt', 'wire'])) {
-                    $http_method = ['GET', 'HEAD'];
-                } elseif ($method !== 'xany') {
+                if ($method !== 'xany') {
                     $http_method = [ltrim($method, 'x')];
                 }
                 $middleware = strpos($method, 'x') === 0 ? $this->default_middleware : null;
