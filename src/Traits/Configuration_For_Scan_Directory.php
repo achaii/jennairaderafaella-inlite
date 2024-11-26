@@ -76,7 +76,10 @@ trait Configuration_For_Scan_Directory
 
                 if ($pluginJson !== null) {
                     ($dirName === 'DirectoriesI' ? $getDefaultDirI[] = $pluginJson : $getDefaultDirII[] = $pluginJson);
-                    $getCombineDir[] = $pluginJson + ['modules-namespace' => $namespacePath . $dir] + ['modules-init' => ($dirName === 'DirectoriesI') ? 'inlite' : 'inlite/api'];
+                    $getCombineDir[] = $pluginJson
+                        + ['modules-namespace' => $namespacePath . $dir]
+                        + ['modules-init' => ($dirName === 'DirectoriesI') ? 'inlite' : 'inlite/api']
+                        + ['modules-enable' => true];
                 }
             }
         }
@@ -85,10 +88,16 @@ trait Configuration_For_Scan_Directory
         $duplicatedModules = [];
         foreach ($getCombineDir as $module) {
             if (isset($module['controller']) && is_array($module['controller'])) {
-                foreach ($module['controller'] as $controller) {
+                foreach ($module['controller'] as $key => $controller) {
                     if (isset($controller['name'])) {
                         $duplicatedModule = $module;
                         $duplicatedModule['modules-name'] = $controller['name'];
+                        $duplicatedModule['modules-enable'] = $controller['enable'];
+
+                        if ($duplicatedModule['modules-name-route'] === '/' && $key >= 1) {
+                            $duplicatedModule['modules-name-route'] = "";
+                        }
+
                         $duplicatedModules[] = $duplicatedModule;
                     }
                 }
