@@ -27,7 +27,7 @@ Locate the config/app.php file and add the service provider in the appropriate s
     /*
     * Application Service Providers...
     */
-    Jennairaderafaella\Themoduless\ModuleServiceProvider::class
+    Jennairaderafaella\Inlite\InliteServiceProvider::class
 
     ])->toArray(),
 ```
