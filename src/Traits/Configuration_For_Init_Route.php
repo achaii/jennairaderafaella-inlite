@@ -48,9 +48,9 @@ trait Configuration_For_Init_Route
      * @param string $prefix The prefix for the routes.
      * @param string $controller The name of the controller class.
      * @param array $option Optional configuration options:
-     *                      - 'only': Array of method names to include.
-     *                      - 'except': Array of method names to exclude.
-     *                      - 'patterns': Array of route patterns for method parameters.
+     * - 'only': Array of method names to include.
+     * - 'except': Array of method names to exclude.
+     * - 'patterns': Array of route patterns for method parameters.
      * @return void
      */
     public function auto(string $prefix, string $controller, array $option = []): void
@@ -71,39 +71,46 @@ trait Configuration_For_Init_Route
         ]), function () use ($controller, $only, $except, $pattern) {
             $class_mapping = $this->get_reflection_class($controller);
 
-            if (class_exists($class_mapping)) {
-                $class_reference = new ReflectionClass($class_mapping);
+            if (!class_exists($class_mapping)) {
+                return false;
+            }
 
-                foreach ($class_reference->getMethods(ReflectionMethod::IS_PUBLIC) as $method) {
-                    // Skip base controller methods, non-public methods, and magic methods
-                    if (
-                        in_array($method->class, [MainController::class, "{$this->default_namespace}\\Http\\Controllers"]) ||
-                        $method->getDeclaringClass()->getParentClass()->getName() === MainController::class ||
-                        !$method->isPublic() || str_starts_with($method->name, '__')
-                    ) {
-                        continue;
-                    }
+            $class_reference = new ReflectionClass($class_mapping);
 
-                    $method_name = $method->name;
-                    // Apply only and except filters
-                    if ((!empty($only) && !in_array($method_name, $only)) ||
-                        (!empty($except) && in_array($method_name, $except))
-                    ) {
-                        continue;
-                    }
+            foreach ($class_reference->getMethods(ReflectionMethod::IS_PUBLIC) as $method) {
 
-                    [$http_method, $route_name, $middleware] = $this->get_http_method($method_name);
-                    [$end_points, $route_pattern] = $this->get_reflection_method($method, $pattern);
-
-                    $end_point = implode('/', $end_points);
-
-                    $handler = [$class_reference->getName(), $method->name];
-                    $routePath = ($route_name !== $this->initialization_method ? $route_name : '') . "/{$end_point}";
-
-                    $this->router
-                        ->addRoute(array_map(fn ($method) => strtoupper($method), $http_method), $routePath, $handler)
-                        ->where($route_pattern)->name("{$method->name}")->middleware($middleware);
+                // Skip base controller methods, non-public methods, and magic methods
+                if (in_array($method->class, [MainController::class, "{$this->default_namespace}\\Http\\Controllers"])) {
+                    continue;
                 }
+                if ($method->getDeclaringClass()->getParentClass()->getName() === MainController::class) {
+                    continue;
+                }
+                if (!$method->isPublic() || str_starts_with($method->name, '__')) {
+                    continue;
+                }
+
+                $method_name = $method->name;
+
+                // Apply only and except filters
+                if ((!empty($only) && !in_array($method_name, $only))) {
+                    continue;
+                }
+                if ((!empty($except) && in_array($method_name, $except))) {
+                    continue;
+                }
+
+                [$http_method, $route_name, $middleware] = $this->get_http_method($method_name);
+                [$end_points, $route_pattern] = $this->get_reflection_method($method, $pattern);
+
+                $end_point = implode('/', $end_points);
+
+                $handler = [$class_reference->getName(), $method->name];
+                $routePath = ($route_name !== $this->initialization_method ? $route_name : '') . "/{$end_point}";
+
+                $this->router
+                    ->addRoute(array_map(fn ($method) => strtoupper($method), $http_method), $routePath, $handler)
+                    ->where($route_pattern)->name("{$method->name}")->middleware($middleware);
             }
         });
     }
@@ -142,16 +149,12 @@ trait Configuration_For_Init_Route
         $package = self::directories_initialize_module()['custome'];
 
         foreach ($package as $item) {
-            if (!$item){
+            if ($item['modules-name'] !== strtolower($class) || $item['modules-enable'] !== true) {
                 continue;
             }
 
-            if ($item['modules-type'] === 'controller' && $item['modules-name'] === strtolower($class) && $item['modules-enable'] === true) {
-                return str_replace(['/', '.php'], ['\\', ''], $item['modules-namespace']) . '\\Http\\Controllers\\' . ucwords($item['modules-name']);
-            }
+            return str_replace(['/', '.php'], ['\\', ''], $item['modules-namespace']) . '\\Http\\Controllers\\' . ucwords($item['modules-name']);
         }
-
-        return null;
     }
 
     /**
@@ -170,14 +173,16 @@ trait Configuration_For_Init_Route
 
         foreach (array_merge($this->default_method, $this->xdefault_method) as $method) {
             $method = strtolower($method);
-            if (stripos($method_name, $method, 0) === 0) {
-                if ($method !== 'xany') {
-                    $http_method = [ltrim($method, 'x')];
-                }
-                $middleware = strpos($method, 'x') === 0 ? $this->default_middleware : null;
-                $method_name = lcfirst(preg_replace('/' . $method . '_?/i', '', $method_name, 1));
-                break;
+            if (stripos($method_name, $method, 0) !== 0) {
+                continue;
             }
+
+            if ($method !== 'xany') {
+                $http_method = [ltrim($method, 'x')];
+            }
+
+            $middleware = strpos($method, 'x') === 0 ? $this->default_middleware : null;
+            $method_name = lcfirst(preg_replace('/' . $method . '_?/i', '', $method_name, 1));
         }
 
         $method_name = strtolower(preg_replace('%([a-z]|[0-9])([A-Z])%', '\1-\2', $method_name));
@@ -204,10 +209,12 @@ trait Configuration_For_Init_Route
             $param_name = $param->getName();
             $type_hint = $param->hasType() ? $param->getType()->getName() : null;
 
-            if ($this->get_route_param($type_hint)) {
-                $route_pattern[$param_name] = $merged_pattern[$param_name] ?? ($this->default_pattern[":{$type_hint}"] ?? $this->default_pattern[':any']);
-                $end_point[] = $param->isOptional() ? "{{$param_name}?}" : "{{$param_name}}";
+            if (!$this->get_route_param($type_hint)) {
+                continue;
             }
+
+            $route_pattern[$param_name] = $merged_pattern[$param_name] ?? ($this->default_pattern[":{$type_hint}"] ?? $this->default_pattern[':any']);
+            $end_point[] = $param->isOptional() ? "{{$param_name}?}" : "{{$param_name}}";
         }
 
         return [$end_point, $route_pattern];
@@ -233,6 +240,7 @@ trait Configuration_For_Init_Route
         if (function_exists('enum_exists') && enum_exists($type)) {
             return true;
         }
+
         return false;
     }
 }

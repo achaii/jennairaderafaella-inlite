@@ -48,5 +48,11 @@ Sometimes, a module requires a dedicated folder to separate APIs and views. To a
 ```BASH
 php artian jenna:create inlite/api namemodule
 ```
+### Auto build js configuration
+For Laravel Mix to perform an automatic build, configure the webpack.mix.js file and add the following line of code:
+```
+'resources/views/modules/**/**/*.js'
+```
+For using Vite during development, a best and easy-to-apply approach is still being explored.
 ## License
 The MIT License (MIT). Please see [License File](LICENSE.md) for more information.

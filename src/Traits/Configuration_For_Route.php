@@ -75,9 +75,11 @@ trait Configuration_For_Route
         $default = self::directories_initialize_module()['custome'] ?? [];
 
         foreach ($default as $item) {
-            if ($item && $item['modules'] && $item['modules-type'] == 'controller' && $item['modules-init'] === 'inlite') {
-                self::get_route_for_controller($item);
+            if($item['modules-type'] !== 'controller' || $item['modules-init'] !== 'inlite'){ 
+                continue;
             }
+            
+            self::get_route_for_controller($item);
         }
     }
 
@@ -91,11 +93,14 @@ trait Configuration_For_Route
      */
     private static function get_route_init_controller_api(): void
     {
-        $default = self::directories_initialize_module()['default']['II'] ?? [];
+        $default = self::directories_initialize_module()['custome'] ?? [];
+        
         foreach ($default as $item) {
-            if ($item && $item['modules'] && $item['modules-type'] == 'controller' && $item['modules-init'] === 'inlite/api') {
-                self::get_route_for_controller($item);
+            if($item['modules-type'] !== 'controller' || $item['modules-init'] !== 'inlite/api'){ 
+                continue;
             }
+
+            self::get_route_for_controller($item);
         }
     }
 
@@ -115,47 +120,5 @@ trait Configuration_For_Route
             'middleware' => $init['modules-middleware'],
             'patterns' => ['id' => '\d+', 'value' => '\w+'],
         ]);
-    }
-
-    /**
-     * Convert module name to formatted string.
-     *
-     * This method converts a module name string into a formatted string suitable
-     * for use in routes and views.
-     *
-     * @param string $data The module name to format.
-     * @return string The formatted module name.
-     */
-    private static function name_of_modules(string $data)
-    {
-        return str_replace(' ', '_', ucwords(trim(str_replace('_', ' ', $data))));
-    }
-
-    /**
-     * Replace underscores with hyphens in a string.
-     *
-     * This method replaces underscores with hyphens in a given string,
-     * typically used for formatting file names.
-     *
-     * @param string $data The string to process.
-     * @return string The processed string with underscores replaced by hyphens.
-     */
-    private static function replace_name(string $data)
-    {
-        return str_replace('_', '-', $data);
-    }
-
-    /**
-     * Replace underscores with hyphens in a string and convert to lowercase.
-     *
-     * This method replaces underscores with hyphens in a given string and converts
-     * the result to lowercase.
-     *
-     * @param string $data The string to process.
-     * @return string The processed string with underscores replaced by hyphens and converted to lowercase.
-     */
-    private static function replace_to_lower(string $data)
-    {
-        return str_replace('_', '-', $data);
     }
 }

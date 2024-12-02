@@ -63,11 +63,16 @@ class Create extends Command
     protected function createModule($mode, $name)
     {
         // Check if mode and name are provided, otherwise display an error
-        if (!$mode || !$name) {
-            $this->error('Mode or Name is missing.');
+        if (!$mode) {
+            $this->error('Mode is missing.');
             return;
         }
 
+        if (!$name) {
+            $this->error('Name is missing.');
+            return;
+        }
+        
         // Handle the 'inlite/api' mode
         if ($mode === 'inlite/api') {
             try {

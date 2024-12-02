@@ -86,27 +86,42 @@ trait Configuration_For_Scan_Directory
 
         // New logic: duplicate array based on 'controller' names
         $duplicatedModules = [];
+
         foreach ($getCombineDir as $module) {
-            if (isset($module['controller']) && is_array($module['controller'])) {
-                foreach ($module['controller'] as $key => $controller) {
-                    if (isset($controller['name'])) {
-                        $duplicatedModule = $module;
-                        $duplicatedModule['modules-name'] = $controller['name'];
-                        $duplicatedModule['modules-enable'] = $controller['enable'];
+            if (!isset($module['controller']) && !is_array($module['controller'])) {
+                // Add module as is if no 'controller' or single entry
+                $duplicatedModules[] = $module;
+            }
 
-                        if ($duplicatedModule['modules-name-route'] === '/' && $key >= 1) {
-                            $duplicatedModule['modules-name-route'] = "";
-                        }
-
-                        $duplicatedModules[] = $duplicatedModule;
-                    }
+            foreach ($module['controller'] as $key => $controller) {
+                if (!isset($controller['name'])) {
+                    continue;
                 }
-            } else {
-                $duplicatedModules[] = $module; // Add module as is if no 'controller' or single entry
+
+                $duplicatedModule = $module;
+
+                $duplicatedModule['modules-name'] = $controller['name'];
+                $duplicatedModule['modules-enable'] = $controller['enable'];
+                $duplicatedModule['modules-name-route'] = ($duplicatedModule['modules-name-route'] === '/' && $key >= 1 ? "" : $duplicatedModule['modules-name-route']);
+
+                $duplicatedModules[] = $duplicatedModule;
             }
         }
 
         $getCombineDir = $duplicatedModules;
+
+        // Count the total number of modules
+        $currentModuleCount = count($getCombineDir);
+
+        // Check previous module count from the session
+        $previousModuleCount = Session::get('module_count', 0);
+
+        // If there's a change in module count, run npm command
+        if ($currentModuleCount !== $previousModuleCount) {
+            self::build();
+            // Update the session with the new module count
+            Session::put('module_count', $currentModuleCount);
+        }
 
         // Remove null elements
         $getDefaultDirI = array_filter($getDefaultDirI);
@@ -125,6 +140,21 @@ trait Configuration_For_Scan_Directory
         Session::put('directories_initialize_module', $directoriesInitializeModule);
 
         return $directoriesInitializeModule;
+    }
+
+    /**
+     * Run npm run prod command.
+     */
+    private static function build()
+    {
+        // Ensure this function only works in a server environment
+        if (function_exists('shell_exec') && file_exists(base_path('vite.config.js'))) {
+            shell_exec('npm run build');
+        }
+
+        if (function_exists('shell_exec') && file_exists(base_path('webpack.mix.js'))) {
+            shell_exec('npm run prod');
+        }
     }
 
     /**
@@ -223,28 +253,28 @@ trait Configuration_For_Scan_Directory
 
         // Search for YAML file
         foreach ($files as $file) {
-            if (pathinfo($file, PATHINFO_EXTENSION) === 'yaml') {
-                $filename = $file;
-                break;
+            if (pathinfo($file, PATHINFO_EXTENSION) !== 'yaml') {
+                continue;
             }
-        }
-
-        // If a YAML file is found, rename it if necessary
-        if ($filename) {
-            $newFilename = env('MODULE_HIDDEN_TOKEN') . '_modules.yaml';
-            if ($filename !== $newFilename) {
-                rename($modulePath . '/' . $filename, $modulePath . '/' . $newFilename);
-            }
-
-            // Full path to the renamed file
-            $path = $modulePath . '/' . $newFilename;
-
-            // Parse and return the contents of the YAML file
-            return Yaml::parseFile($path) ?: [];
+            $filename = $file;
         }
 
         // Return an empty array if no YAML file is found
-        return [];
+        if (!$filename) {
+            return [];
+        }
+
+        // If a YAML file is found, rename it if necessary
+        $newFilename = env('MODULE_HIDDEN_TOKEN') . '_modules.yaml';
+        if ($filename !== $newFilename) {
+            rename($modulePath . '/' . $filename, $modulePath . '/' . $newFilename);
+        }
+
+        // Full path to the renamed file
+        $path = $modulePath . '/' . $newFilename;
+
+        // Parse and return the contents of the YAML file
+        return Yaml::parseFile($path) ?: [];
     }
 
     /**
@@ -264,9 +294,31 @@ trait Configuration_For_Scan_Directory
         $scanned = scandir($path);
         $result = [];
         foreach ($scanned as $item) {
-            if ($item === '.' || $item === '..' || !is_dir("$path/$item") || in_array($item, $hiddenPackages) || $item === $hiddenToken || in_array($item, $hiddenModules)) {
+
+            if ($item === '.') {
                 continue;
             }
+
+            if ($item === '..') {
+                continue;
+            }
+
+            if (!is_dir("$path/$item")) {
+                continue;
+            }
+
+            if (in_array($item, $hiddenPackages)) {
+                continue;
+            }
+
+            if ($item === $hiddenToken) {
+                continue;
+            }
+
+            if (in_array($item, $hiddenModules)) {
+                continue;
+            }
+
             $result[] = $item;
         }
 
