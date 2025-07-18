@@ -6,7 +6,8 @@ use Illuminate\Support\ServiceProvider;
 use Jennairaderafaella\Inlite\Inlite as Module;
 use Jennairaderafaella\Inlite\Command\{
     Install,
-    Create,
+    InliteWeb,
+    InliteApi,
 };
 
 class InliteServiceProvider extends ServiceProvider
@@ -28,7 +29,8 @@ class InliteServiceProvider extends ServiceProvider
         // Register artisan commands related to module installation and creation
         $this->commands([
             Install::class,
-            Create::class,
+            InliteWeb::class,
+            InliteApi::class,
         ]);
     }
 

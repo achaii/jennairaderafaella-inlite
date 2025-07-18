@@ -99,46 +99,48 @@ class Install extends Command
             $env = base_path('.env');
             $envExample = base_path('.env.example');
 
-            $key = 'MODULE_HIDDEN_TOKEN';
-            $value = 'c5326e51-2865-46cd-99fa-119169298b65';
-
-            if (file_exists($env)) {
-                // Read entire content of the .env file
-                $envContent = file_get_contents($env);
-
-                // Search for the key in the .env file
-                $pattern = "/^" . preg_quote($key, '/') . "=/m";
-
-                // If the key exists, replace its value
-                if (preg_match($pattern, $envContent)) {
-                    $envContent = preg_replace($pattern, $key . "=" . $value, $envContent);
-                } else {
-                    // If the key does not exist, add it at the end
-                    $envContent .= PHP_EOL . PHP_EOL . $key . "=" . $value;
+            // List of variables to add or update
+            $variables = [
+                'MODULE_HIDDEN_TOKEN' => 'c5326e51-2865-46cd-99fa-119169298b65',
+                'MODULE_LOCALE' => 'en',
+                'MODULE_TIMEZONE' => 'UTC',
+                'MODULE_CIPHER_KEY' => '',
+                'MODULE_CIPHER_SIGN' => ''
+            ];
+            
+            // Function to update or append variables in an environment file
+            function updateEnvFile($filePath, $variables) {
+                if (file_exists($filePath)) {
+                    $envContent = file_get_contents($filePath);
+            
+                    foreach ($variables as $key => $value) {
+                        $pattern = "/^" . preg_quote($key, '/') . "=/m";
+            
+                        // Update value if the key exists, or append it if not
+                        if (preg_match($pattern, $envContent)) {
+                            $envContent = preg_replace($pattern, $key . "=" . $value, $envContent);
+                        } else {
+                            $envContent .= PHP_EOL . $key . "=" . $value;
+                        }
+                    }
+            
+                    // Write the updated content back to the file
+                    file_put_contents($filePath, $envContent);
                 }
-
-                // Write the updated content back to the .env file
-                file_put_contents($env, $envContent);
             }
-
-            if (file_exists($envExample) && !env('MODULE_HIDDEN_TOKEN')) {
-                // Read entire content of the .env.example file
-                $envContent = file_get_contents($envExample);
-
-                // Search for the key in the .env.example file
-                $pattern = "/^" . preg_quote($key, '/') . "=/m";
-
-                // If the key exists, replace its value
-                if (preg_match($pattern, $envContent)) {
-                    $envContent = preg_replace($pattern, $key . "=" . $value, $envContent);
-                } else {
-                    // If the key does not exist, add it at the end
-                    $envContent .= PHP_EOL . PHP_EOL . $key . "=" . $value;
+            
+            // Update the .env file
+            updateEnvFile($env, $variables);
+            
+            // Update the .env.example file if the variables are not already in .env
+            if (file_exists($envExample)) {
+                foreach ($variables as $key => $value) {
+                    if (!env($key)) {
+                        updateEnvFile($envExample, [$key => $value]);
+                    }
                 }
-
-                // Write the updated content back to the .env.example file
-                file_put_contents($envExample, $envContent);
             }
+            
         } catch (ProcessFailedException $exception) {
             // If directory creation fails, output error
             $this->error('Failed to create modules directory.');

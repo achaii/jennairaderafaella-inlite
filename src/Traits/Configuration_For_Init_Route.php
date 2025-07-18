@@ -147,14 +147,19 @@ trait Configuration_For_Init_Route
     private function get_reflection_class($class)
     {
         $package = self::directories_initialize_module()['custome'];
+        
+        $matched = collect($package)->first(function ($item) use ($class) {
+            return isset($item['modules'], $item['modules-enable'], $item['modules-name'])
+                && $item['modules']
+                && $item['modules-enable']
+                && strtolower($item['modules-name']) === strtolower($class);
+        });
 
-        foreach ($package as $item) {
-            if ($item['modules-name'] !== strtolower($class) || $item['modules-enable'] !== true) {
-                continue;
-            }
-
-            return str_replace(['/', '.php'], ['\\', ''], $item['modules-namespace']) . '\\Http\\Controllers\\' . ucwords($item['modules-name']);
+        if (!$matched) {
+            return false;
         }
+
+        return str_replace(['/', '.php'], ['\\', ''], $matched['modules-namespace']) . '\\Http\\Controllers\\' . ucwords($matched['modules-name']);
     }
 
     /**

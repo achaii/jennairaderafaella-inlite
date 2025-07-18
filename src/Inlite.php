@@ -52,7 +52,7 @@ class Inlite
         self::initialize_view();
         self::route_initialize();
     }
-    
+
     /**
      * Initialize PHP files inside specific directories within the Modules directory.
      * 
@@ -71,7 +71,15 @@ class Inlite
         // Loop through each base path
         foreach ($basePaths as $basePath) {
             // Folders to include PHP files from
-            $folders = ['Http/Controllers', 'Repositories', 'Models', 'Services', 'Helpers'];
+            $folders = [
+                'Http/Controllers',
+                'Controllers',
+                'Repositories',
+                'Middleware',
+                'Models',
+                'Services',
+                'Helpers'
+            ];
             foreach ($folders as $folder) {
                 // Include PHP files using glob based on folder path
                 foreach (glob($basePath . "/*/{$folder}/*.php") as $file) {

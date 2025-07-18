@@ -73,14 +73,9 @@ trait Configuration_For_Route
     private static function get_route_init_controller(): void
     {
         $default = self::directories_initialize_module()['custome'] ?? [];
-
-        foreach ($default as $item) {
-            if($item['modules-type'] !== 'controller' || $item['modules-init'] !== 'inlite'){ 
-                continue;
-            }
-            
+        array_map(function ($item) {
             self::get_route_for_controller($item);
-        }
+        }, array_filter($default, fn($item) => $item['modules'] &&  $item['modules-init'] === 'inlite'));
     }
 
     /**
@@ -94,14 +89,9 @@ trait Configuration_For_Route
     private static function get_route_init_controller_api(): void
     {
         $default = self::directories_initialize_module()['custome'] ?? [];
-        
-        foreach ($default as $item) {
-            if($item['modules-type'] !== 'controller' || $item['modules-init'] !== 'inlite/api'){ 
-                continue;
-            }
-
+        array_map(function ($item) {
             self::get_route_for_controller($item);
-        }
+        }, array_filter($default, fn($item) => $item['modules'] &&  $item['modules-init'] === 'inlite/api'));
     }
 
     /**
