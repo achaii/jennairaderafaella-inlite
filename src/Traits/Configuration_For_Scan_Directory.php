@@ -88,9 +88,8 @@ trait Configuration_For_Scan_Directory
         $duplicatedModules = [];
 
         foreach ($getCombineDir as $module) {
-            if (!isset($module['controller']) && !is_array($module['controller'])) {
-                // Add module as is if no 'controller' or single entry
-                $duplicatedModules[] = $module;
+            if($module['modules-type'] !== 'controller'){
+                continue;
             }
 
             foreach ($module['controller'] as $key => $controller) {
@@ -110,19 +109,6 @@ trait Configuration_For_Scan_Directory
 
         $getCombineDir = $duplicatedModules;
 
-        // Count the total number of modules
-        $currentModuleCount = count($getCombineDir);
-
-        // Check previous module count from the session
-        $previousModuleCount = Session::get('module_count', 0);
-
-        // If there's a change in module count, run npm command
-        if ($currentModuleCount !== $previousModuleCount) {
-            self::build();
-            // Update the session with the new module count
-            Session::put('module_count', $currentModuleCount);
-        }
-
         // Remove null elements
         $getDefaultDirI = array_filter($getDefaultDirI);
         $getDefaultDirII = array_filter($getDefaultDirII);
@@ -140,21 +126,6 @@ trait Configuration_For_Scan_Directory
         Session::put('directories_initialize_module', $directoriesInitializeModule);
 
         return $directoriesInitializeModule;
-    }
-
-    /**
-     * Run npm run prod command.
-     */
-    private static function build()
-    {
-        // Ensure this function only works in a server environment
-        if (function_exists('shell_exec') && file_exists(base_path('vite.config.js'))) {
-            shell_exec('npm run build');
-        }
-
-        if (function_exists('shell_exec') && file_exists(base_path('webpack.mix.js'))) {
-            shell_exec('npm run prod');
-        }
     }
 
     /**

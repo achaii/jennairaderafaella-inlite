@@ -9,7 +9,7 @@ composer require jennairaderafaella/inlite
 Currently, Composer installation is still being prepared.
 
 ## Configuration
-### For Laravel 11:
+### For Laravel 11 and later:
 To use the package, you can manually register it. Locate the `bootstrap/provider.php` file and add the following lines:
 
 ```PHP
@@ -41,18 +41,22 @@ php artisan jenna:install
 ### Module Initialization:
 To add a new module, execute this command:
 ```BASH
-php artisan jenna:create inlite namemodule
+php artisan jenna:inlite namemodule
 ```
 ### Creating a Separate Folder for API and Views:
 Sometimes, a module requires a dedicated folder to separate APIs and views. To achieve this, run the command below:
 ```BASH
-php artian jenna:create inlite/api namemodule
+php artian jenna:inlite/api namemodule
 ```
-### Auto build js configuration
-For Laravel Mix to perform an automatic build, configure the webpack.mix.js file and add the following line of code:
+### Configuration js or/and css at directory modules
+For Laravel Mix to build, configure the webpack.mix.js file and add the following line of code:
 ```
 'resources/views/modules/**/**/*.js'
 ```
-For using Vite during development, a best and easy-to-apply approach is still being explored.
+At vite folowing line this code, edit at resources/js/app.js:
+```
+import '../../../resources/views/modules/**/Assets/css/*.css';
+import '../../../resources/views/modules/**/Assets/js/*.js';
+```
 ## License
 The MIT License (MIT). Please see [License File](LICENSE.md) for more information.
